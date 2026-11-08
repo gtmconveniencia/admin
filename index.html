@@ -455,7 +455,7 @@ a{text-decoration:none;color:inherit}
     <div class="lcard-top">
       <div class="llogo"><i class="fa-solid fa-wheat-awn" style="color:#fff"></i></div>
       <h1>Painel Admin</h1>
-      <p>GTM CONVENIÊNCIA</p>
+      <p>CONVENIÊNCIA</p>
     </div>
     <input type="email"    class="linput" id="l-email" placeholder="E-mail" autocomplete="username">
     <input type="password" class="linput" id="l-pass"  placeholder="Senha"  autocomplete="current-password" onkeydown="if(event.key==='Enter')login()">
@@ -474,7 +474,7 @@ a{text-decoration:none;color:inherit}
     <div class="sb-top">
       <div class="sb-brand">
         <div class="sb-ico"><i class="fa-solid fa-wheat-awn" style="color:#fff"></i></div>
-        <div class="sb-name">Admin Panel<small></small></div>
+        <div class="sb-name">Admin<small></small></div>
       </div>
     </div>
     <nav class="sb-nav">
@@ -701,6 +701,8 @@ a{text-decoration:none;color:inherit}
               <div class="fg"><label>Endereço (exibido na loja)</label><input id="st-addr" placeholder="Alameda Principal, 84..."></div>
               <div class="fg"><label>Link Google Maps / avaliação</label><input id="st-maps" placeholder="https://maps.google.com/...">
                 <div class="fg-hint">Também é o destino do botão "Avaliar no Google Maps" que o cliente vê ao finalizar o pedido. Dica: use o link "Pedir avaliações" do seu Perfil da Empresa no Google.</div></div>
+              <div class="fg"><label>Instagram da loja</label><input id="st-instagram" placeholder="https://www.instagram.com/ ou @">
+                <div class="fg-hint">Aparece no rodapé da loja. Aceita o link completo do perfil ou só o @usuário. Deixe vazio para usar o padrão do site.</div></div>
             </div>
           </div>
           <div class="sc"><h4><i class="fa-regular fa-clock"></i> Horário de Funcionamento</h4>
@@ -1913,6 +1915,7 @@ function applySettingsForm(){
   document.getElementById('st-phone').value=settings.phone||'';
   document.getElementById('st-addr').value=settings.address||'';
   document.getElementById('st-maps').value=settings.maps_url||'';
+  document.getElementById('st-instagram').value=settings.instagram_url||'';
   document.getElementById('st-open').value=settings.hours_open||'07:00';
   document.getElementById('st-close').value=settings.hours_close||'20:00';
   document.getElementById('st-delivery').value=settings.delivery_message||'';
@@ -1938,7 +1941,18 @@ function applySettingsForm(){
 }
 function toggleDay(el){el.className=el.className.includes('on')?'dchk':'dchk on';}
 function toggleFC(){forceClosed=!forceClosed;document.getElementById('fc-sw').className='tsw'+(forceClosed?' on':'');}
+// Aceita link completo, "instagram.com/usuario", "@usuario" ou "usuario". Retorna "" (vazio), a URL padrão ou null (inválido)
+function normInstagram(v){
+  v=String(v||'').trim(); if(!v) return '';
+  let rest=v.replace(/^https?:\/\//i,'');
+  if(/^(www\.|m\.)?instagram\.com/i.test(rest)) rest=rest.replace(/^(www\.|m\.)?instagram\.com\/?/i,'');
+  else if(/^https?:/i.test(v) || /^[a-z0-9-]+(\.[a-z0-9-]+)+\//i.test(rest)) return null;   // link de outro site
+  const user=rest.replace(/^@/,'').split(/[/?#]/)[0];
+  return /^[A-Za-z0-9._]{1,30}$/.test(user) ? 'https://www.instagram.com/'+user+'/' : null;
+}
 async function saveSettings(){
+  const ig=normInstagram(document.getElementById('st-instagram').value);
+  if(ig===null){toast('Instagram inválido. Use o link do perfil ou @usuario.','err');return;}
   const days=[]; document.querySelectorAll('.dchk.on').forEach(el=>days.push(parseInt(el.dataset.d)));
   const names=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
   let lbl='';
@@ -1950,6 +1964,7 @@ async function saveSettings(){
     phone:document.getElementById('st-phone').value.trim(),
     address:document.getElementById('st-addr').value.trim(),
     maps_url:document.getElementById('st-maps').value.trim(),
+    instagram_url:ig,
     hours_open:document.getElementById('st-open').value,
     hours_close:document.getElementById('st-close').value,
     open_days:days,open_days_label:lbl,
@@ -1965,8 +1980,16 @@ async function saveSettings(){
     delivery_paid_zones:document.getElementById('st-paid-zones').value.split(/[,\n]/).map(z=>z.trim()).filter(Boolean).join(', '),
     pix_key_type:document.getElementById('st-pix-type').value,pix_key:document.getElementById('st-pix-key').value.trim(),pix_receiver:document.getElementById('st-pix-name').value.trim(),
     updated_at:new Date().toISOString()};
-  const{error}=await sb.from('store_settings').upsert({id:1,...payload});
+  let{error}=await sb.from('store_settings').upsert({id:1,...payload});
+  if(error && /instagram_url/.test(error.message||'')){
+    // coluna ainda não existe no Supabase: salva o resto normalmente e avisa
+    const{instagram_url,...semIg}=payload;
+    const r2=await sb.from('store_settings').upsert({id:1,...semIg});
+    if(r2.error){toast('Erro: '+r2.error.message,'err');return;}
+    toast('Salvo, mas o Instagram NÃO foi gravado: crie a coluna instagram_url no Supabase (veja o SQL).','err'); await loadSettings(); return;
+  }
   if(error){toast('Erro: '+error.message,'err');return;}
+  document.getElementById('st-instagram').value=ig;
   toast('Configurações salvas!','ok'); await loadSettings();
 }
 
