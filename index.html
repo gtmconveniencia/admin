@@ -455,7 +455,7 @@ a{text-decoration:none;color:inherit}
     <div class="lcard-top">
       <div class="llogo"><i class="fa-solid fa-wheat-awn" style="color:#fff"></i></div>
       <h1>Painel Admin</h1>
-      <p>CONVENIÊNCIA</p>
+      <p>GTM CONVENIÊNCIA</p>
     </div>
     <input type="email"    class="linput" id="l-email" placeholder="E-mail" autocomplete="username">
     <input type="password" class="linput" id="l-pass"  placeholder="Senha"  autocomplete="current-password" onkeydown="if(event.key==='Enter')login()">
@@ -474,7 +474,7 @@ a{text-decoration:none;color:inherit}
     <div class="sb-top">
       <div class="sb-brand">
         <div class="sb-ico"><i class="fa-solid fa-wheat-awn" style="color:#fff"></i></div>
-        <div class="sb-name">Admin<small></small></div>
+        <div class="sb-name">Admin Panel<small></small></div>
       </div>
     </div>
     <nav class="sb-nav">
@@ -701,8 +701,11 @@ a{text-decoration:none;color:inherit}
               <div class="fg"><label>Endereço (exibido na loja)</label><input id="st-addr" placeholder="Alameda Principal, 84..."></div>
               <div class="fg"><label>Link Google Maps / avaliação</label><input id="st-maps" placeholder="https://maps.google.com/...">
                 <div class="fg-hint">Também é o destino do botão "Avaliar no Google Maps" que o cliente vê ao finalizar o pedido. Dica: use o link "Pedir avaliações" do seu Perfil da Empresa no Google.</div></div>
-              <div class="fg"><label>Instagram da loja</label><input id="st-instagram" placeholder="https://www.instagram.com/ ou @">
+              <div class="fg"><label>Instagram da loja</label><input id="st-instagram" placeholder="https://www.instagram.com/gtm_conveniencia/ ou @gtm_conveniencia">
                 <div class="fg-hint">Aparece no rodapé da loja. Aceita o link completo do perfil ou só o @usuário. Deixe vazio para usar o padrão do site.</div></div>
+              <div class="fg"><label>Destino da rota "Como chegar" (coordenadas, link do Maps ou endereço)</label><input id="st-route" placeholder="-1.379000, -48.442000   (coordenadas exatas da loja)">
+                <div class="fg-hint"><b>Recomendado: coordenadas.</b> No Google Maps, toque e segure (ou clique com o botão direito) exatamente em cima da loja: os números aparecem, ex. <i>-1.379000, -48.442000</i>. Copie e cole aqui. Também aceita o link do Google Maps ou um endereço, mas o Google pode levar para outro ponto do conjunto. Vazio = usa o endereço exibido na loja.</div>
+                <button type="button" class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="testRoute()"><i class="fa-solid fa-location-arrow"></i> Testar rota no Maps</button></div>
             </div>
           </div>
           <div class="sc"><h4><i class="fa-regular fa-clock"></i> Horário de Funcionamento</h4>
@@ -1916,6 +1919,7 @@ function applySettingsForm(){
   document.getElementById('st-addr').value=settings.address||'';
   document.getElementById('st-maps').value=settings.maps_url||'';
   document.getElementById('st-instagram').value=settings.instagram_url||'';
+  document.getElementById('st-route').value=settings.route_address||'';
   document.getElementById('st-open').value=settings.hours_open||'07:00';
   document.getElementById('st-close').value=settings.hours_close||'20:00';
   document.getElementById('st-delivery').value=settings.delivery_message||'';
@@ -1941,6 +1945,27 @@ function applySettingsForm(){
 }
 function toggleDay(el){el.className=el.className.includes('on')?'dchk':'dchk on';}
 function toggleFC(){forceClosed=!forceClosed;document.getElementById('fc-sw').className='tsw'+(forceClosed?' on':'');}
+// Destino da rota: coordenadas "lat,lng", link do Google Maps (extrai as coordenadas) ou texto de endereço
+function routeUrl(v){
+  v=String(v||'').trim();
+  const coord=/^\(?\s*(-?\d{1,3}(?:[.,]\d+)?)\s*[,; ]\s*(-?\d{1,3}(?:[.,]\d+)?)\s*\)?$/;
+  let m=v.match(coord);
+  if(m){ const la=m[1].replace(',','.'), ln=m[2].replace(',','.'); if(Math.abs(la)<=90&&Math.abs(ln)<=180) return 'https://www.google.com/maps/dir/?api=1&destination='+la+','+ln; }
+  if(/^https:\/\/(www\.)?(google\.[a-z.]+\/maps|maps\.google\.[a-z.]+|maps\.app\.goo\.gl|goo\.gl\/maps)/i.test(v)){
+    m=v.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/)||v.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/)||v.match(/[?&](?:q|query|destination)=(-?\d+\.\d+)(?:,|%2C)(-?\d+\.\d+)/i);
+    return m ? 'https://www.google.com/maps/dir/?api=1&destination='+m[1]+','+m[2] : v;   // link curto: abre como está
+  }
+  let a=v.replace(/\s*\|\s*/g,', ').replace(/\s+/g,' ').trim();
+  if(!a) a=(document.getElementById('st-addr').value||'').trim();
+  if(!a) return '';
+  if(!/bel[eé]m/i.test(a)) a+=', Belém - PA';
+  return 'https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(a);
+}
+function testRoute(){
+  const u=routeUrl(document.getElementById('st-route').value);
+  if(!u){toast('Preencha o destino ou o endereço da loja primeiro.','err');return;}
+  window.open(u,'_blank','noopener');
+}
 // Aceita link completo, "instagram.com/usuario", "@usuario" ou "usuario". Retorna "" (vazio), a URL padrão ou null (inválido)
 function normInstagram(v){
   v=String(v||'').trim(); if(!v) return '';
@@ -1965,6 +1990,7 @@ async function saveSettings(){
     address:document.getElementById('st-addr').value.trim(),
     maps_url:document.getElementById('st-maps').value.trim(),
     instagram_url:ig,
+    route_address:document.getElementById('st-route').value.trim().replace(/\s+/g,' '),
     hours_open:document.getElementById('st-open').value,
     hours_close:document.getElementById('st-close').value,
     open_days:days,open_days_label:lbl,
@@ -1981,12 +2007,14 @@ async function saveSettings(){
     pix_key_type:document.getElementById('st-pix-type').value,pix_key:document.getElementById('st-pix-key').value.trim(),pix_receiver:document.getElementById('st-pix-name').value.trim(),
     updated_at:new Date().toISOString()};
   let{error}=await sb.from('store_settings').upsert({id:1,...payload});
-  if(error && /instagram_url/.test(error.message||'')){
+  const optCols=['instagram_url','route_address'];
+  const faltam=error?optCols.filter(c=>new RegExp(c).test(error.message||'')):[];
+  if(faltam.length){
     // coluna ainda não existe no Supabase: salva o resto normalmente e avisa
-    const{instagram_url,...semIg}=payload;
-    const r2=await sb.from('store_settings').upsert({id:1,...semIg});
+    const resto={...payload}; faltam.forEach(c=>delete resto[c]);
+    const r2=await sb.from('store_settings').upsert({id:1,...resto});
     if(r2.error){toast('Erro: '+r2.error.message,'err');return;}
-    toast('Salvo, mas o Instagram NÃO foi gravado: crie a coluna instagram_url no Supabase (veja o SQL).','err'); await loadSettings(); return;
+    toast('Salvo, mas NÃO gravou: '+faltam.join(', ')+'. Crie a coluna no Supabase (veja o SQL).','err'); await loadSettings(); return;
   }
   if(error){toast('Erro: '+error.message,'err');return;}
   document.getElementById('st-instagram').value=ig;
