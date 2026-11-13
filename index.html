@@ -279,11 +279,11 @@ a{text-decoration:none;color:inherit}
 
 /* ════ VARIAÇÕES ════ */
 .var-list{display:flex;flex-direction:column;gap:7px;margin-top:4px}
-.var-row{display:grid;grid-template-columns:1fr 90px 70px auto;gap:7px;align-items:center}
+.var-row{display:grid;grid-template-columns:1fr 100px 70px auto;gap:7px;align-items:center}
 .var-row input{background:var(--s2);border:1.5px solid var(--brd);border-radius:var(--rad);padding:8px 11px;color:var(--txt);font-size:.84rem;transition:var(--trans);width:100%}
 .var-row input:focus{outline:none;border-color:var(--car)}
 .var-row input::placeholder{color:var(--txt4)}
-.var-row-labels{display:grid;grid-template-columns:1fr 90px 70px auto;gap:7px;margin-top:8px}
+.var-row-labels{display:grid;grid-template-columns:1fr 100px 70px auto;gap:7px;margin-top:8px}
 .var-row-labels span{font-size:.67rem;font-weight:700;color:var(--txt4);text-transform:uppercase;letter-spacing:.06em}
 .btn-var-add{display:inline-flex;align-items:center;gap:6px;margin-top:8px;background:none;border:1.5px dashed var(--brd2);border-radius:var(--rad);padding:7px 14px;font-size:.78rem;font-weight:600;color:var(--txt3);cursor:pointer;transition:var(--trans);font-family:'Inter',sans-serif}
 .btn-var-add:hover{border-color:var(--car);color:var(--car-l)}
@@ -890,13 +890,13 @@ a{text-decoration:none;color:inherit}
           <input id="pf-var-label" placeholder="Ex: Escolha o sabor, Tamanho…" style="background:var(--s2);border:1.5px solid var(--brd);border-radius:var(--rad);padding:8px 11px;color:var(--txt);font-size:.84rem;width:100%;transition:var(--trans)">
         </div>
         <div class="var-row-labels">
-          <span>Nome da variação *</span><span>Acréscimo (R$)</span><span>Estoque</span><span></span>
+          <span>Nome da variação *</span><span>Preço final (R$)</span><span>Estoque</span><span></span>
         </div>
         <div class="var-list" id="pf-var-list"></div>
         <button type="button" class="btn-var-add" onclick="addVarRow()">
           <i class="fa-solid fa-plus"></i> Adicionar opção
         </button>
-        <div class="fg-hint" style="margin-top:6px">Estoque 0 = esgotado. Deixe Acréscimo em branco se o preço for o mesmo do produto.</div>
+        <div class="fg-hint" style="margin-top:6px">Preço final = quanto o cliente paga por essa opção (ex.: Pack com 6 = 42,00). Estoque 0 = esgotado. Deixe o preço em branco para usar o preço do produto.</div>
       </div>
       <label class="ftoggle" onclick="toggleSW('pf-active-sw','pfActive')">
         <div class="tsw on" id="pf-active-sw"></div><span class="tl">Produto ativo (visível na loja)</span>
@@ -1495,13 +1495,13 @@ function renderProdTable(){
 }
 
 /* ═══ VARIAÇÕES ═══ */
-function addVarRow(name='', priceDelta='', stock=''){
+function addVarRow(name='', price='', stock=''){
   const list = document.getElementById('pf-var-list');
   const row  = document.createElement('div');
   row.className = 'var-row';
   row.innerHTML = `
     <input type="text"   placeholder="Ex: Laranja" value="${name}" class="var-name">
-    <input type="number" placeholder="0,00"        value="${priceDelta}" step="0.01" min="0" class="var-price">
+    <input type="number" placeholder="Igual" value="${price}" step="0.01" min="0" class="var-price">
     <input type="number" placeholder="10"          value="${stock}" min="0" class="var-stock">
     <button type="button" class="btn-var-del" onclick="this.closest('.var-row').remove()" title="Remover"><i class="fa-solid fa-xmark"></i></button>`;
   list.appendChild(row);
@@ -1513,10 +1513,10 @@ function getVariationsFromForm(){
   rows.forEach(row => {
     const name  = row.querySelector('.var-name').value.trim();
     if(!name) return;
-    const delta = parseFloat(row.querySelector('.var-price').value);
+    const vprice = parseFloat(row.querySelector('.var-price').value);
     const stock = parseInt(row.querySelector('.var-stock').value);
     const obj   = {name};
-    if(!isNaN(delta) && delta > 0) obj.price_delta = delta;
+    if(!isNaN(vprice) && vprice > 0) obj.price = vprice; // preço final absoluto
     if(!isNaN(stock)) obj.stock = stock; else obj.stock = 999;
     vars.push(obj);
   });
@@ -1533,7 +1533,14 @@ function loadVariationsToForm(p){
   else if(typeof p.variations === 'string'){
     try{ const v=JSON.parse(p.variations); if(Array.isArray(v)) vars=v; }catch(_){}
   }
-  vars.forEach(v => addVarRow(v.name, v.price_delta||'', v.stock!=null?v.stock:''));
+  const base = parseFloat(p.price)||0;
+  vars.forEach(v => {
+    // novo formato: v.price (final). Formato antigo: price_delta (acréscimo) -> converte para preço final
+    let fin = '';
+    if(v.price!=null && v.price!=='') fin = v.price;
+    else if(v.price_delta>0) fin = Math.round((base + v.price_delta)*100)/100;
+    addVarRow(v.name, fin, v.stock!=null?v.stock:'');
+  });
 }
 
 function openProdForm(id){
