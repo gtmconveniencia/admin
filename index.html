@@ -162,6 +162,43 @@ a{text-decoration:none;color:inherit}
 .ocard-total{font-weight:700;color:var(--car-l)}
 .ocard-time{font-size:.72rem;color:var(--txt4)}
 .ocard-body{padding:0 16px 14px;display:none}
+.ocard-grip{color:var(--txt4);cursor:grab;padding:4px 6px 4px 0;touch-action:none;display:flex;align-items:center;font-size:.85rem}
+.ocard-hdr:hover .ocard-grip{color:var(--car-l)}
+.ocard-arrow{color:var(--txt4);font-size:.8rem;transition:transform .15s}
+.ocard.collapsed .ocard-arrow{transform:rotate(-90deg)}
+.ocard.dragging{opacity:.35}
+.ord-hint{font-size:.72rem;color:var(--txt4);margin:-4px 0 12px}
+.vtoggle{display:flex;border:1px solid var(--brd);border-radius:var(--rad);overflow:hidden}
+.vtoggle button{background:transparent;border:none;color:var(--txt3);font-size:.78rem;font-weight:600;padding:7px 12px;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:'Inter',sans-serif;transition:var(--trans)}
+.vtoggle button.on{background:var(--car);color:#fff}
+.kb-board{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(260px,1fr);gap:12px;overflow-x:auto;padding:2px 2px 14px;scrollbar-width:thin;scrollbar-color:var(--brd) transparent;align-items:start}
+.kb-col{background:var(--s1);border:1.5px solid var(--brd);border-top:3px solid var(--kc,var(--brd));border-radius:var(--rad2);display:flex;flex-direction:column;min-height:220px;transition:var(--trans)}
+.kb-col-h{display:flex;align-items:center;gap:8px;padding:11px 13px;font-size:.8rem;font-weight:700;color:var(--txt)}
+.kb-col-h .kb-n{margin-left:auto;background:var(--s3);color:var(--txt2);border-radius:20px;font-size:.7rem;padding:1px 9px;font-variant-numeric:tabular-nums}
+.kb-list{padding:0 10px 10px;display:flex;flex-direction:column;gap:9px;max-height:calc(100vh - 330px);min-height:90px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--brd) transparent}
+.kb-empty{font-size:.74rem;color:var(--txt4);text-align:center;padding:22px 8px;border:1.5px dashed var(--brd);border-radius:var(--rad)}
+.kb-card{background:var(--s2);border:1px solid var(--brd);border-radius:var(--rad);padding:10px 12px;cursor:pointer;transition:var(--trans)}
+.kb-card:hover{border-color:var(--brd2)}
+.kb-card.dragging{opacity:.35}
+.kb-top{display:flex;align-items:center;gap:6px;font-size:.7rem;color:var(--txt3);font-weight:700}
+.kb-top .kb-time{margin-left:auto;font-weight:500;color:var(--txt4)}
+.kb-name{font-weight:600;color:var(--txt);font-size:.88rem;margin:4px 0 5px}
+.kb-items{font-size:.76rem;color:var(--txt2);line-height:1.45}
+.kb-foot{display:flex;align-items:center;gap:6px;margin-top:8px;flex-wrap:wrap}
+.kb-tag{font-size:.66rem;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--s3);color:var(--txt2)}
+.kb-total{margin-left:auto;font-weight:700;color:var(--car-l);font-size:.86rem}
+.kb-next{margin-top:9px;width:100%;border:1px dashed var(--brd2);background:transparent;color:var(--car-l);border-radius:var(--rad);font-size:.72rem;font-weight:700;padding:6px;cursor:pointer;font-family:'Inter',sans-serif;transition:var(--trans)}
+.kb-next:hover{background:var(--car);color:#fff;border-style:solid;border-color:var(--car)}
+.kb-det{display:none;margin-top:9px;padding-top:9px;border-top:1px solid var(--brd);font-size:.73rem;color:var(--txt3);gap:5px;flex-direction:column}
+.kb-card.open .kb-det{display:flex}
+.kb-det strong{color:var(--txt2)}
+body.ord-dragging .kb-col{border-style:dashed}
+body.ord-dragging .kb-col.drop{border-style:solid;border-color:var(--car);background:var(--s2)}
+@media(max-width:700px){.kb-board{grid-auto-columns:minmax(78vw,1fr)}.kb-list{max-height:none}}
+.ord-ghost{position:fixed;z-index:3000;pointer-events:none;background:var(--s3);border:1.5px solid var(--car);border-radius:var(--rad2);padding:9px 14px;color:var(--txt);font-size:.82rem;font-weight:600;box-shadow:0 10px 28px rgba(0,0,0,.55);transform:translate(-50%,-60%) rotate(-2deg);white-space:nowrap;max-width:80vw;overflow:hidden;text-overflow:ellipsis}
+body.ord-dragging{user-select:none;-webkit-user-select:none;cursor:grabbing}
+body.ord-dragging #order-filter-chips .chip[data-st]{border-style:dashed;border-color:var(--car);color:var(--txt)}
+body.ord-dragging #order-filter-chips .chip.drop{background:var(--car);border-style:solid;color:#fff;transform:scale(1.08)}
 .ocard-body.open{display:block}
 .oitem{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--brd);font-size:.82rem}
 .oitem:last-child{border-bottom:none}
@@ -502,7 +539,7 @@ a{text-decoration:none;color:inherit}
       <button class="nav-item" onclick="go('fornadas',this)"><span class="nav-ico"><i class="fa-solid fa-fire"></i></span> Promoção</button>
       <button class="nav-item" onclick="go('reviews',this)"><span class="nav-ico"><i class="fa-solid fa-star"></i></span> Avaliações</button>
       <button class="nav-item" onclick="go('settings',this)"><span class="nav-ico"><i class="fa-solid fa-gear"></i></span> Configurações</button>
-      <button class="nav-item" onclick="window.open('https://dcrmacedo.github.io/teste/','_blank')"><span class="nav-ico"><i class="fa-solid fa-globe"></i></span> Ver Loja</button>
+      <button class="nav-item" onclick="window.open('https://gtmconveniencia.github.io/GTMCONVENIENCIA/','_blank')"><span class="nav-ico"><i class="fa-solid fa-globe"></i></span> Ver Loja</button>
       <button class="nav-item nav-logout" onclick="logout()"><span class="nav-ico"><i class="fa-solid fa-right-from-bracket"></i></span> Sair da conta</button>
     </nav>
     <div class="sb-foot">
@@ -561,7 +598,11 @@ a{text-decoration:none;color:inherit}
         <div class="card">
           <div class="card-hdr">
             <h3><i class="fa-solid fa-cart-shopping"></i> Pedidos</h3>
-            <div style="display:flex;gap:8px">
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <div class="vtoggle" id="ord-view-toggle">
+                <button data-v="list" onclick="setOrderView('list')"><i class="fa-solid fa-list"></i> Lista</button>
+                <button data-v="board" onclick="setOrderView('board')"><i class="fa-solid fa-table-columns"></i> Quadro</button>
+              </div>
               <button class="btn btn-ghost btn-sm" onclick="loadOrders()"><i class="fa-solid fa-rotate-right"></i> Atualizar</button>
             </div>
           </div>
@@ -571,13 +612,14 @@ a{text-decoration:none;color:inherit}
             </div>
             <div class="chips" id="order-filter-chips">
               <button class="chip on" onclick="setOrderFilter(this,'all')">Todos</button>
-              <button class="chip"    onclick="setOrderFilter(this,'novo')"><i class="fa-solid fa-circle" style="color:#5DADE2"></i> Novos</button>
-              <button class="chip"    onclick="setOrderFilter(this,'confirmado')"><i class="fa-solid fa-circle-check" style="color:var(--grn)"></i> Confirmados</button>
-              <button class="chip"    onclick="setOrderFilter(this,'em_preparo')"><i class="fa-solid fa-kitchen-set" style="color:var(--ylw)"></i> Em preparo</button>
-              <button class="chip"    onclick="setOrderFilter(this,'saiu_entrega')"><i class="fa-solid fa-motorcycle" style="color:var(--pur)"></i> Saiu p/ entrega</button>
-              <button class="chip"    onclick="setOrderFilter(this,'entregue')"><i class="fa-solid fa-party-horn" style="color:var(--grn)"></i> Entregues</button>
-              <button class="chip"    onclick="setOrderFilter(this,'cancelado')"><i class="fa-solid fa-circle-xmark" style="color:var(--red)"></i> Cancelados</button>
+              <button class="chip"    data-st="novo" onclick="setOrderFilter(this,'novo')"><i class="fa-solid fa-circle" style="color:#5DADE2"></i> Novos</button>
+              <button class="chip"    data-st="confirmado" onclick="setOrderFilter(this,'confirmado')"><i class="fa-solid fa-circle-check" style="color:var(--grn)"></i> Confirmados</button>
+              <button class="chip"    data-st="em_preparo" onclick="setOrderFilter(this,'em_preparo')"><i class="fa-solid fa-kitchen-set" style="color:var(--ylw)"></i> Em preparo</button>
+              <button class="chip"    data-st="saiu_entrega" onclick="setOrderFilter(this,'saiu_entrega')"><i class="fa-solid fa-motorcycle" style="color:var(--pur)"></i> Saiu p/ entrega</button>
+              <button class="chip"    data-st="entregue" onclick="setOrderFilter(this,'entregue')"><i class="fa-solid fa-party-horn" style="color:var(--grn)"></i> Entregues</button>
+              <button class="chip"    data-st="cancelado" onclick="setOrderFilter(this,'cancelado')"><i class="fa-solid fa-circle-xmark" style="color:var(--red)"></i> Cancelados</button>
             </div>
+            <div class="ord-hint"><i class="fa-solid fa-hand"></i> Segure e arraste um pedido até um status acima para mudar a etapa.</div>
           </div>
           <div class="card-body" id="orders-list">
             <div class="empty-s"><div class="ei"><i class="fa-regular fa-envelope-open"></i></div><p>Nenhum pedido encontrado.</p></div>
@@ -1233,6 +1275,7 @@ function resetImgState() {
 let categories=[], products=[], orders=[], banners=[], settings={};
 let editProdId=null, editCatId=null, editBannerId=null;
 let prodFilter='all', prodCatFilter='all', orderFilter='all', orderSearch='';
+const collapsedOrders=new Set(); // pedidos que a pessoa fechou (os demais ficam abertos)
 let pfActive=true, bfActive=true, forceClosed=false, feeEnabled=false, feeDefaultFree=true;
 let coupons=[], fornadas=[], reviews=[], editCpId=null, editFnId=null;
 let loyaltyCards=[], loyaltyErr='', ltEnabled=false, ltSearch='';
@@ -1448,7 +1491,75 @@ function matchOrderSearch(o,q){
   if(qDigits && phone.includes(qDigits)) return true;
   return false;
 }
+let orderView='list';
+try{ orderView=localStorage.getItem('pd_ordview')==='board'?'board':'list'; }catch(_){}
+const kbOpen=new Set();
+function setOrderView(v){
+  orderView=v;
+  try{ localStorage.setItem('pd_ordview',v); }catch(_){}
+  renderOrders();
+}
+function paintOrderView(){
+  const board=orderView==='board';
+  document.querySelectorAll('#ord-view-toggle button').forEach(b=>b.classList.toggle('on',b.dataset.v===(board?'board':'list')));
+  const chips=document.getElementById('order-filter-chips'); if(chips) chips.style.display=board?'none':'';
+  const hint=document.querySelector('.ord-hint');
+  if(hint) hint.innerHTML=board
+    ? '<i class="fa-solid fa-hand"></i> Segure um pedido e arraste para outra coluna. Clique no pedido para ver os detalhes.'
+    : '<i class="fa-solid fa-hand"></i> Segure e arraste um pedido até um status acima para mudar a etapa.';
+}
+const kbColor={novo:'#5DADE2',confirmado:'var(--grn)',em_preparo:'var(--ylw)',saiu_entrega:'var(--pur)',entregue:'var(--grn)',cancelado:'var(--red)'};
+function kbTime(o){
+  const d=new Date(o.created_at); if(isNaN(d)) return '';
+  const hoje=d.toDateString()===new Date().toDateString();
+  return hoje?d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+}
+function toggleKb(id){
+  if(_dragJustEnded) return;
+  const c=document.getElementById('kbcard-'+id); if(!c) return;
+  const open=c.classList.toggle('open');
+  if(open) kbOpen.add(id); else kbOpen.delete(id);
+}
+function renderKanban(){
+  const el=document.getElementById('orders-list');
+  const list=orders.filter(o=>matchOrderSearch(o,orderSearch));
+  const scrolls={}; // preserva a rolagem de cada coluna ao atualizar
+  el.querySelectorAll('.kb-col').forEach(c=>{ scrolls[c.dataset.st]=c.querySelector('.kb-list').scrollTop; });
+  const boardX=el.querySelector('.kb-board')?.scrollLeft||0;
+  el.innerHTML='<div class="kb-board">'+statusOpts.map((st,idx)=>{
+    const col=list.filter(o=>o.status===st);
+    const next=idx<4?statusOpts[idx+1]:null;
+    const cards=col.map(o=>{
+      const items=Array.isArray(o.items)?o.items:[];
+      const code=orderCode(o);
+      const retirada=String(o.address||'').toUpperCase().includes('RETIRADA');
+      const more=items.length>3?`<div style="color:var(--txt4)">+ ${items.length-3} ${items.length-3===1?'item':'itens'}</div>`:'';
+      return `<div class="kb-card${kbOpen.has(o.id)?' open':''}" id="kbcard-${o.id}" data-oid="${o.id}" onclick="toggleKb(${o.id})" onpointerdown="ordPointerDown(event,${o.id})">
+        <div class="kb-top"><span class="ocard-grip" title="Arraste para outra coluna"><i class="fa-solid fa-grip-vertical"></i></span><span>#${o.id}${code?` · <span style="color:var(--car-l)">#${code}</span>`:''}</span><span class="kb-time">${kbTime(o)}</span></div>
+        <div class="kb-name">${esc(o.customer_name||'')}</div>
+        <div class="kb-items">${items.slice(0,3).map(i=>`<div>${esc(i.qty+'x '+i.name)}</div>`).join('')}${more}</div>
+        <div class="kb-foot"><span class="kb-tag">${retirada?'Retirada':'Entrega'}</span><span class="kb-tag">${esc(o.payment_method||'')}</span><span class="kb-total">${fp(o.total)}</span></div>
+        <div class="kb-det">
+          <div><strong>Endereço:</strong> ${esc(o.address||'')}</div>
+          ${o.customer_phone?`<div><strong>WhatsApp:</strong> ${esc(fmtPhone(o.customer_phone))}</div>`:''}
+          ${o.change_for?`<div><strong>Troco para:</strong> ${fp(o.change_for)}</div>`:''}
+          ${o.notes?`<div><strong>Obs:</strong> ${esc(o.notes)}</div>`:''}
+          <div style="margin-top:4px"><button class="btn btn-danger btn-xs" onclick="event.stopPropagation();confirmDeleteOrder(${o.id})"><i class="fa-solid fa-trash"></i> Excluir</button></div>
+        </div>
+        ${next?`<button class="kb-next" onclick="event.stopPropagation();updateOrderStatus(${o.id},'${next}')">${statusLabel(next)} →</button>`:''}
+      </div>`;
+    }).join('');
+    return `<div class="kb-col" data-st="${st}" style="--kc:${kbColor[st]}">
+      <div class="kb-col-h"><span>${statusLabel(st)}</span><span class="kb-n">${col.length}</span></div>
+      <div class="kb-list">${cards||'<div class="kb-empty">Solte um pedido aqui</div>'}</div>
+    </div>`;
+  }).join('')+'</div>';
+  el.querySelectorAll('.kb-col').forEach(c=>{ const l=c.querySelector('.kb-list'); if(scrolls[c.dataset.st]) l.scrollTop=scrolls[c.dataset.st]; });
+  const b=el.querySelector('.kb-board'); if(b) b.scrollLeft=boardX;
+}
 function renderOrders(){
+  paintOrderView();
+  if(orderView==='board') return renderKanban();
   const filtered=orders.filter(o=>(orderFilter==='all'||o.status===orderFilter) && matchOrderSearch(o,orderSearch));
   const el=document.getElementById('orders-list');
   if(!filtered.length){el.innerHTML='<div class="empty-s"><div class="ei"><i class="fa-regular fa-folder-open"></i></div><p>'+(orderSearch?'Nenhum pedido encontrado para "'+esc(orderSearch)+'".':'Nenhum pedido encontrado.')+'</p></div>';return;}
@@ -1456,16 +1567,18 @@ function renderOrders(){
     const items=Array.isArray(o.items)?o.items:[];
     const code=orderCode(o);
     const idLabel=code?`#${o.id} <span style="color:var(--car-l);font-weight:600">· #${code}</span>`:`#${o.id}`;
-    return `<div class="ocard" id="ocard-${o.id}">
-      <div class="ocard-hdr" onclick="toggleOrder(${o.id})">
+    const closed=collapsedOrders.has(o.id);
+    return `<div class="ocard${closed?' collapsed':''}" id="ocard-${o.id}" data-oid="${o.id}">
+      <div class="ocard-hdr" onclick="toggleOrder(${o.id})" onpointerdown="ordPointerDown(event,${o.id})">
+        <span class="ocard-grip" title="Arraste até um status"><i class="fa-solid fa-grip-vertical"></i></span>
         <span class="ocard-id">${idLabel}</span>
         <span class="ocard-name">${esc(o.customer_name||'')}</span>
         <span class="badge b-${o.status}">${statusLabel(o.status)}</span>
         <span class="ocard-total">${fp(o.total)}</span>
         <span class="ocard-time">${td(o.created_at)}</span>
-        <span style="color:var(--txt4);font-size:.8rem">▾</span>
+        <span class="ocard-arrow">▾</span>
       </div>
-      <div class="ocard-body" id="ob-${o.id}">
+      <div class="ocard-body${closed?'':' open'}" id="ob-${o.id}">
         <div>${items.map(i=>`<div class="oitem"><span class="oitem-n">${i.qty}x ${i.name}</span><span class="oitem-p">${fp(i.subtotal)}</span></div>`).join('')}</div>
         <div class="sep"></div>
         <div class="ocard-meta">
@@ -1485,7 +1598,88 @@ function renderOrders(){
   }).join('');
 }
 
-function toggleOrder(id){document.getElementById('ob-'+id).classList.toggle('open');}
+function toggleOrder(id){
+  if(_dragJustEnded) return;
+  const b=document.getElementById('ob-'+id), c=document.getElementById('ocard-'+id);
+  if(!b||!c) return;
+  const open=b.classList.toggle('open');
+  c.classList.toggle('collapsed',!open);
+  if(open) collapsedOrders.delete(id); else collapsedOrders.add(id);
+}
+
+/* ═══ ARRASTAR PEDIDO ATÉ UM STATUS ═══ */
+let _drag=null, _dragJustEnded=false;
+function ordPointerDown(e,id){
+  if(e.button!==0) return;
+  if(e.target.closest('button,select,a,input')) return;
+  // mouse: arrasta pelo cabeçalho todo; toque: só pela alça (pra não atrapalhar a rolagem)
+  if(e.pointerType!=='mouse' && !e.target.closest('.ocard-grip')) return;
+  _drag={id,x:e.clientX,y:e.clientY,cx:e.clientX,active:false,ghost:null,chip:null,timer:null};
+  document.addEventListener('pointermove',ordMove);
+  document.addEventListener('pointerup',ordUp);
+  document.addEventListener('pointercancel',ordCancel);
+}
+function ordStart(){
+  const o=orders.find(x=>x.id===_drag.id); if(!o) return ordCancel();
+  _drag.active=true;
+  const g=document.createElement('div');
+  g.className='ord-ghost';
+  g.textContent='#'+o.id+' · '+(o.customer_name||'')+' · '+fp(o.total);
+  document.body.appendChild(g); _drag.ghost=g;
+  document.body.classList.add('ord-dragging');
+  document.querySelectorAll('[data-oid="'+o.id+'"]').forEach(c=>c.classList.add('dragging'));
+  // rolagem automática perto das bordas (para alcançar os status lá em cima)
+  _drag.timer=setInterval(()=>{
+    const sc=document.querySelector('.c-body'); if(!sc||!_drag) return;
+    const r=sc.getBoundingClientRect(), y=_drag.y;
+    if(y<r.top+70) sc.scrollTop-=14; else if(y>r.bottom-70) sc.scrollTop+=14;
+    const bd=document.querySelector('.kb-board');
+    if(bd){
+      const br=bd.getBoundingClientRect(), x=_drag.cx;
+      if(x<br.left+60) bd.scrollLeft-=14; else if(x>br.right-60) bd.scrollLeft+=14;
+      // rola a lista da coluna sob o ponteiro
+      const col=document.elementFromPoint(_drag.cx,y)?.closest('.kb-list');
+      if(col){ const cr=col.getBoundingClientRect(); if(y<cr.top+40) col.scrollTop-=10; else if(y>cr.bottom-40) col.scrollTop+=10; }
+    }
+  },16);
+}
+function ordMove(e){
+  if(!_drag) return;
+  _drag.y=e.clientY; _drag.cx=e.clientX;
+  if(!_drag.active){
+    if(Math.hypot(e.clientX-_drag.x,e.clientY-_drag.y)<7) return;
+    ordStart(); if(!_drag) return;
+  }
+  e.preventDefault();
+  _drag.ghost.style.left=e.clientX+'px'; _drag.ghost.style.top=e.clientY+'px';
+  const el=document.elementFromPoint(e.clientX,e.clientY);
+  const chip=el&&el.closest?el.closest('#order-filter-chips .chip[data-st], .kb-col[data-st]'):null;
+  if(chip!==_drag.chip){
+    _drag.chip?.classList.remove('drop');
+    chip?.classList.add('drop');
+    _drag.chip=chip;
+  }
+}
+function ordEnd(){
+  document.removeEventListener('pointermove',ordMove);
+  document.removeEventListener('pointerup',ordUp);
+  document.removeEventListener('pointercancel',ordCancel);
+  if(!_drag) return null;
+  clearInterval(_drag.timer);
+  _drag.ghost?.remove();
+  _drag.chip?.classList.remove('drop');
+  document.body.classList.remove('ord-dragging');
+  document.querySelectorAll('[data-oid="'+_drag.id+'"]').forEach(c=>c.classList.remove('dragging'));
+  const d=_drag; _drag=null; return d;
+}
+function ordUp(){
+  const d=ordEnd(); if(!d||!d.active) return;
+  _dragJustEnded=true; setTimeout(()=>{_dragJustEnded=false;},60); // evita abrir/fechar o card ao soltar
+  const st=d.chip&&d.chip.dataset.st;
+  const o=orders.find(x=>x.id===d.id);
+  if(st && o && o.status!==st) updateOrderStatus(d.id,st);
+}
+function ordCancel(){ const d=ordEnd(); if(d&&d.active){ _dragJustEnded=true; setTimeout(()=>{_dragJustEnded=false;},60); } }
 
 async function updateOrderStatus(id,status){
   const{error}=await sb.from('orders').update({status,updated_at:new Date().toISOString()}).eq('id',id);
