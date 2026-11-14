@@ -76,6 +76,9 @@ a{text-decoration:none;color:inherit}
 .c-hdr{background:var(--s1);border-bottom:1px solid var(--brd);padding:0 24px;height:57px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .c-hdr h2{font-size:1.05rem;font-weight:600;color:var(--txt)}
 .c-hdr-r{display:flex;align-items:center;gap:14px}
+.snd-btn{width:32px;height:32px;border-radius:50%;border:1px solid var(--brd);background:var(--s2,transparent);color:var(--car-l);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.82rem;transition:var(--trans)}
+.snd-btn:hover{border-color:var(--brd2)}
+.snd-btn.off{color:var(--txt4)}
 .clock{font-size:.76rem;color:var(--txt3);font-variant-numeric:tabular-nums}
 .dot-live{width:8px;height:8px;border-radius:50%;background:var(--grn);box-shadow:0 0 0 3px rgba(39,174,96,.2);animation:pls 2s infinite}
 @keyframes pls{0%,100%{box-shadow:0 0 0 0 rgba(39,174,96,.4)}50%{box-shadow:0 0 0 6px rgba(39,174,96,0)}}
@@ -520,6 +523,7 @@ a{text-decoration:none;color:inherit}
       <button class="sb-toggle" id="sb-toggle-btn" onclick="toggleSidebar()" aria-label="Menu"><i class="fa-solid fa-bars"></i></button>
       <h2 id="page-title">Dashboard</h2>
       <div class="c-hdr-r">
+        <button class="snd-btn" id="snd-btn" onclick="toggleSound()" title="Som de novo pedido"><i class="fa-solid fa-bell"></i></button>
         <span class="dot-live"></span>
         <span class="clock" id="clock">--:--:--</span>
       </div>
@@ -877,7 +881,8 @@ a{text-decoration:none;color:inherit}
       <div class="g2">
         <div class="fg"><label>Badge</label><input id="pf-badge" placeholder="Ex: Favorito"></div>
         <div class="fg"><label>Destaque</label>
-          <select id="pf-hl"><option value="">Nenhum</option><option value="promo">Promoção</option><option value="fav">Favorito</option><option value="best">Mais vendido</option></select>
+          <select id="pf-hl"><option value="">Nenhum</option><option value="promo">Promoção</option><option value="fav">Favorito</option><option value="best">Mais pedido (fixar)</option><option value="hide_best">Nunca mostrar em Mais pedidos</option></select>
+          <div class="fg-hint">Os produtos mais vendidos entram sozinhos em "Mais pedidos". Use "Fixar" para manter um produto lá sempre, ou "Nunca mostrar" para tirá-lo.</div>
         </div>
       </div>
       <!-- VARIAÇÕES / SABORES -->
@@ -1272,7 +1277,7 @@ function subscribeRealtime(){
   sb.channel('admin')
     .on('postgres_changes',{event:'*',schema:'public',table:'products'},   async()=>{await loadProducts();renderProdTable();renderDashboard();})
     .on('postgres_changes',{event:'*',schema:'public',table:'categories'}, async()=>{await loadCategories();renderCatTable();renderProdCtabs();renderDashboard();})
-    .on('postgres_changes',{event:'*',schema:'public',table:'orders'},     async()=>{await loadOrders();renderOrders();renderDashboard();updateOrderBadge();})
+    .on('postgres_changes',{event:'*',schema:'public',table:'orders'},     async(pl)=>{await loadOrders();renderOrders();renderDashboard();updateOrderBadge();if(pl&&pl.eventType==='INSERT')newOrderAlert(pl.new);})
     .on('postgres_changes',{event:'*',schema:'public',table:'banners'},    async()=>{await loadBanners();renderBannersAdmin();})
     .on('postgres_changes',{event:'*',schema:'public',table:'coupons'},async()=>{await loadExtras();renderExtras();})
     .on('postgres_changes',{event:'*',schema:'public',table:'fornadas'},async()=>{await loadExtras();renderExtras();})
@@ -1283,6 +1288,57 @@ function subscribeRealtime(){
 }
 
 /* ═══ CLOCK ═══ */
+/* ═══ SOM DE NOVO PEDIDO ═══ */
+let _actx=null, _sndOn=true, _titleTimer=null;
+try{ _sndOn = localStorage.getItem('pd_snd')!=='off'; }catch(_){}
+function _audio(){
+  try{
+    if(!_actx){ const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return null; _actx=new AC(); }
+    if(_actx.state==='suspended') _actx.resume();
+    return _actx;
+  }catch(_){ return null; }
+}
+// navegadores só liberam áudio depois de um clique/toque na página
+['pointerdown','keydown'].forEach(ev=>document.addEventListener(ev,()=>_audio(),{once:true}));
+function playChime(){
+  const ac=_audio(); if(!ac||ac.state!=='running') return;
+  // "ding-dong" repetido 2x: Mi5 → Dó5
+  [[0,659.25],[0.32,523.25],[1.1,659.25],[1.42,523.25]].forEach(([t,f])=>{
+    const o=ac.createOscillator(), g=ac.createGain();
+    o.type='sine'; o.frequency.value=f;
+    const s=ac.currentTime+t;
+    g.gain.setValueAtTime(0.0001,s);
+    g.gain.exponentialRampToValueAtTime(0.35,s+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001,s+0.7);
+    o.connect(g); g.connect(ac.destination);
+    o.start(s); o.stop(s+0.75);
+  });
+}
+function toggleSound(){
+  _sndOn=!_sndOn;
+  try{ localStorage.setItem('pd_snd',_sndOn?'on':'off'); }catch(_){}
+  paintSoundBtn();
+  if(_sndOn){ playChime(); toast('Som de novo pedido ligado','success'); }
+  else toast('Som de novo pedido desligado','info');
+}
+function paintSoundBtn(){
+  const b=document.getElementById('snd-btn'); if(!b) return;
+  b.classList.toggle('off',!_sndOn);
+  b.innerHTML=_sndOn?'<i class="fa-solid fa-bell"></i>':'<i class="fa-solid fa-bell-slash"></i>';
+  b.title=_sndOn?'Som de novo pedido: ligado (clique para silenciar)':'Som de novo pedido: desligado';
+}
+function newOrderAlert(o){
+  if(_sndOn) playChime();
+  // pisca o título da aba enquanto ela estiver em segundo plano
+  if(document.hidden && !_titleTimer){
+    const base=document.title; let on=false;
+    _titleTimer=setInterval(()=>{ on=!on; document.title=on?'🔔 Novo pedido!':base; },1000);
+    const stop=()=>{ if(document.hidden) return; clearInterval(_titleTimer); _titleTimer=null; document.title=base; document.removeEventListener('visibilitychange',stop); };
+    document.addEventListener('visibilitychange',stop);
+  }
+  try{ toast('Novo pedido'+(o&&o.customer_name?' de '+o.customer_name:'')+'!','success'); }catch(_){}
+}
+paintSoundBtn();
 function startClock(){const t=()=>document.getElementById('clock').textContent=new Date().toLocaleTimeString('pt-BR');t();setInterval(t,1000);}
 
 /* ═══ NAV ═══ */
