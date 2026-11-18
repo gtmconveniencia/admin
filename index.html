@@ -168,6 +168,14 @@ a{text-decoration:none;color:inherit}
 .ocard.collapsed .ocard-arrow{transform:rotate(-90deg)}
 .ocard.dragging{opacity:.35}
 .ord-hint{font-size:.72rem;color:var(--txt4);margin:-4px 0 12px}
+.out-row{display:grid;grid-template-columns:28px 1fr 80px 110px;gap:10px;align-items:center;padding:9px 12px;background:var(--s2);border:1px solid var(--brd);border-radius:10px;margin-bottom:7px;font-size:.84rem}
+.out-row .rk{color:var(--txt4);font-weight:700;font-size:.75rem}
+.out-row .nm{color:var(--txt);font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.out-row .qt{color:var(--txt2);text-align:right;font-variant-numeric:tabular-nums}
+.out-row .vl{color:var(--car-l);font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
+.out-sum{display:flex;gap:18px;flex-wrap:wrap;font-size:.78rem;color:var(--txt3);margin-bottom:12px}
+.out-sum strong{color:var(--txt)}
+@media(max-width:600px){.out-row{grid-template-columns:22px 1fr 56px 86px;gap:7px;padding:8px 9px;font-size:.78rem}}
 .vtoggle{display:flex;border:1px solid var(--brd);border-radius:var(--rad);overflow:hidden}
 .vtoggle button{background:transparent;border:none;color:var(--txt3);font-size:.78rem;font-weight:600;padding:7px 12px;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:'Inter',sans-serif;transition:var(--trans)}
 .vtoggle button.on{background:var(--car);color:#fff}
@@ -539,7 +547,7 @@ body.ord-dragging #order-filter-chips .chip.drop{background:var(--car);border-st
       <button class="nav-item" onclick="go('fornadas',this)"><span class="nav-ico"><i class="fa-solid fa-fire"></i></span> Promoção</button>
       <button class="nav-item" onclick="go('reviews',this)"><span class="nav-ico"><i class="fa-solid fa-star"></i></span> Avaliações</button>
       <button class="nav-item" onclick="go('settings',this)"><span class="nav-ico"><i class="fa-solid fa-gear"></i></span> Configurações</button>
-      <button class="nav-item" onclick="window.open('https://gtmconveniencia.github.io/GTMCONVENIENCIA/','_blank')"><span class="nav-ico"><i class="fa-solid fa-globe"></i></span> Ver Loja</button>
+      <button class="nav-item" onclick="window.open('https://dcrmacedo.github.io/teste/','_blank')"><span class="nav-ico"><i class="fa-solid fa-globe"></i></span> Ver Loja</button>
       <button class="nav-item nav-logout" onclick="logout()"><span class="nav-ico"><i class="fa-solid fa-right-from-bracket"></i></span> Sair da conta</button>
     </nav>
     <div class="sb-foot">
@@ -571,6 +579,17 @@ body.ord-dragging #order-filter-chips .chip.drop{background:var(--car);border-st
       <!-- ── DASHBOARD ── -->
       <div class="view on" id="view-dashboard">
         <div class="stats" id="stats"></div>
+        <div class="stats" id="stats-money"></div>
+        <div class="card" style="margin-bottom:18px">
+          <div class="card-hdr">
+            <h3><i class="fa-solid fa-chart-column"></i> O que saiu</h3>
+            <div class="vtoggle" id="out-toggle">
+              <button data-r="day" onclick="setOutRange('day')">Hoje</button>
+              <button data-r="month" onclick="setOutRange('month')">Este mês</button>
+            </div>
+          </div>
+          <div class="card-body" id="dash-out"></div>
+        </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
           <div class="card">
             <div class="card-hdr">
@@ -1429,10 +1448,11 @@ function renderDashboard(){
   const out=products.filter(p=>p.stock===0).length;
   const novos=orders.filter(o=>o.status==='novo').length;
   document.getElementById('stats').innerHTML=`
-    <div class="stat" onclick="go('products',null)"><div class="stat-top"><div class="stat-ico ic-o"></div></div><div class="stat-val">${total}</div><div class="stat-lbl">Produtos</div></div>
-    <div class="stat" onclick="go('orders',null)" style="${novos?'border-color:var(--blu)':''}"><div class="stat-top"><div class="stat-ico ic-b"></div></div><div class="stat-val" style="${novos?'color:#5DADE2':''}">${novos}</div><div class="stat-lbl">Pedidos Novos</div><div class="stat-sub">${orders.length} total</div></div>
+    <div class="stat" onclick="go('products',null)"><div class="stat-top"><div class="stat-ico ic-o"><i class="fa-solid fa-box-open"></i></div></div><div class="stat-val">${total}</div><div class="stat-lbl">Produtos</div></div>
+    <div class="stat" onclick="go('orders',null)" style="${novos?'border-color:var(--blu)':''}"><div class="stat-top"><div class="stat-ico ic-b"><i class="fa-solid fa-bell"></i></div></div><div class="stat-val" style="${novos?'color:#5DADE2':''}">${novos}</div><div class="stat-lbl">Pedidos Novos</div><div class="stat-sub">${orders.length} total</div></div>
     <div class="stat" onclick="go('products',null)"><div class="stat-top"><div class="stat-ico ic-y"><i class="fa-solid fa-triangle-exclamation"></i></div></div><div class="stat-val" style="${low?'color:var(--ylw)':''}">${low}</div><div class="stat-lbl">Baixo Estoque</div></div>
     <div class="stat" onclick="go('products',null)"><div class="stat-top"><div class="stat-ico ic-r"><i class="fa-solid fa-ban"></i></div></div><div class="stat-val" style="${out?'color:var(--red)':''}">${out}</div><div class="stat-lbl">Esgotados</div></div>`;
+  renderSales(); refreshSales();
   // recent orders
   const ro=orders.slice(0,5);
   document.getElementById('dash-orders').innerHTML=!ro.length?'<div class="empty-s"><div class="ei"><i class="fa-regular fa-envelope-open"></i></div><p>Nenhum pedido ainda.</p></div>':ro.map(o=>`
@@ -1449,6 +1469,61 @@ function renderDashboard(){
       <div style="flex:1"><div style="font-weight:600;font-size:.84rem;color:var(--txt)">${p.name}</div><div style="font-size:.72rem;color:var(--txt3)">${p.stock} un.</div></div>
       <span class="badge ${p.stock===0?'b-out':'b-low'}">${p.stock===0?'Esgotado':'Baixo'}</span>
     </div>`).join('');
+}
+
+/* ═══ VENDAS E ESTOQUE (dashboard) ═══ */
+let salesRows=null, outRange='day', _salesT=null;
+function refreshSales(){ clearTimeout(_salesT); _salesT=setTimeout(loadSales,600); }
+async function loadSales(){
+  try{
+    const ini=new Date(); ini.setDate(1); ini.setHours(0,0,0,0);
+    const {data,error}=await sb.from('orders').select('id,total,status,items,created_at')
+      .gte('created_at',ini.toISOString()).neq('status','cancelado')
+      .order('created_at',{ascending:false}).limit(3000);
+    salesRows=error?null:(data||[]);
+  }catch(_){ salesRows=null; }
+  renderSales();
+}
+function setOutRange(r){ outRange=r; renderSales(); }
+function salesAgg(range){
+  const d0=new Date(); d0.setHours(0,0,0,0);
+  const rows=(salesRows||[]).filter(o=>range==='month'||new Date(o.created_at)>=d0);
+  const prod=new Map(); let total=0, units=0;
+  rows.forEach(o=>{
+    total+=Number(o.total)||0;
+    (Array.isArray(o.items)?o.items:[]).forEach(i=>{
+      const q=Number(i.qty)||0, v=Number(i.subtotal)||((Number(i.price)||0)*q);
+      units+=q;
+      const key=String(i.id??i.name);
+      const cur=prod.get(key)||{id:i.id,name:i.name,qty:0,val:0};
+      cur.qty+=q; cur.val+=v; prod.set(key,cur);
+    });
+  });
+  return {n:rows.length,total,units,list:[...prod.values()].sort((a,b)=>b.qty-a.qty||b.val-a.val)};
+}
+function renderSales(){
+  const box=document.getElementById('stats-money'); if(!box) return;
+  const ok=Array.isArray(salesRows);
+  const day=salesAgg('day'), mon=salesAgg('month');
+  const stockUnits=products.reduce((a,p)=>a+Math.max(0,Number(p.stock)||0),0);
+  const stockVal=products.reduce((a,p)=>a+Math.max(0,Number(p.stock)||0)*(Number(p.price)||0),0);
+  const v=x=>ok?fp(x):'—';
+  const plural=(n,a,b)=>n+' '+(n===1?a:b);
+  box.innerHTML=`
+    <div class="stat" onclick="go('orders',null)"><div class="stat-top"><div class="stat-ico ic-g"><i class="fa-solid fa-sun"></i></div></div><div class="stat-val" style="font-size:1.45rem">${v(day.total)}</div><div class="stat-lbl">Vendas hoje</div><div class="stat-sub">${ok?plural(day.n,'pedido','pedidos')+' · '+plural(day.units,'item','itens'):'sem dados'}</div></div>
+    <div class="stat" onclick="go('orders',null)"><div class="stat-top"><div class="stat-ico ic-o"><i class="fa-solid fa-calendar-days"></i></div></div><div class="stat-val" style="font-size:1.45rem">${v(mon.total)}</div><div class="stat-lbl">Vendas no mês</div><div class="stat-sub">${ok?plural(mon.n,'pedido','pedidos')+' · '+plural(mon.units,'item','itens'):'sem dados'}</div></div>
+    <div class="stat" onclick="go('orders',null)"><div class="stat-top"><div class="stat-ico ic-p"><i class="fa-solid fa-receipt"></i></div></div><div class="stat-val" style="font-size:1.45rem">${ok&&mon.n?fp(mon.total/mon.n):'—'}</div><div class="stat-lbl">Ticket médio (mês)</div><div class="stat-sub">por pedido</div></div>
+    <div class="stat" onclick="go('products',null)"><div class="stat-top"><div class="stat-ico ic-b"><i class="fa-solid fa-warehouse"></i></div></div><div class="stat-val" style="font-size:1.45rem">${fp(stockVal)}</div><div class="stat-lbl">Valor do estoque</div><div class="stat-sub">${stockUnits.toLocaleString('pt-BR')} un. · a preço de venda</div></div>`;
+  document.querySelectorAll('#out-toggle button').forEach(b=>b.classList.toggle('on',b.dataset.r===outRange));
+  const out=document.getElementById('dash-out'); if(!out) return;
+  if(!ok){ out.innerHTML='<div class="empty-s"><p>Não foi possível carregar as vendas. Clique em Atualizar.</p></div>'; return; }
+  const a=outRange==='month'?mon:day;
+  const name=x=>{ const p=products.find(pp=>String(pp.id)===String(x.id)); return p?p.name:x.name; };
+  out.innerHTML=!a.n
+    ? `<div class="empty-s"><div class="ei"><i class="fa-regular fa-folder-open"></i></div><p>Nenhuma venda ${outRange==='month'?'neste mês':'hoje'} ainda.</p></div>`
+    : `<div class="out-sum"><span><strong>${fp(a.total)}</strong> em ${plural(a.n,'pedido','pedidos')}</span><span><strong>${a.units}</strong> unidades saíram</span><span style="color:var(--txt4)">Pedidos cancelados não entram. O total inclui taxa de entrega.</span></div>`
+      + a.list.slice(0,15).map((x,i)=>`<div class="out-row"><span class="rk">${i+1}º</span><span class="nm" title="${esc(name(x))}">${esc(name(x))}</span><span class="qt">${x.qty} un.</span><span class="vl">${fp(x.val)}</span></div>`).join('')
+      + (a.list.length>15?`<div style="font-size:.74rem;color:var(--txt4);text-align:center;margin-top:4px">+ ${a.list.length-15} produtos com menos saída</div>`:'');
 }
 
 function updateOrderBadge(){
